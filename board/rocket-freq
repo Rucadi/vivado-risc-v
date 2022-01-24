@@ -26,6 +26,12 @@ u250       Rocket.*b[2-9][0-9].* 80.0
 u250       Rocket.*b1[0-9].*     100.0
 u250       Rocket.*              125.0
 
+u280       Rocket64.*gem         31.25
+u280       Rocket64[xyz].*       40.0
+u280       Rocket.*b[2-9][0-9].* 80.0
+u280       Rocket.*b1[0-9].*     100.0
+u280       Rocket.*              125.0
+
 .*            Rocket.*gem       20.0
 .*            Rocket.*l2w?      31.25
 .*            Rocket64[xyz].*   20.0
