@@ -11,3 +11,5 @@ set_property CFGBVS GND [current_design]
 # SI570 user clock
 set_property -dict {PACKAGE_PIN BJ6 IOSTANDARD LVDS} [get_ports clk_user_clk_n]
 set_property -dict {PACKAGE_PIN BH6 IOSTANDARD LVDS} [get_ports clk_user_clk_p]
+
+set_property -dict {PACKAGE_PIN BH26 IOSTANDARD LVCMOS18} [get_ports pcie_perstn]

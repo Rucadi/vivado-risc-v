@@ -298,36 +298,51 @@ proc create_hier_cell_IO { parentCell nameHier } {
    CONFIG.enable_mdio {0} \
  ] $Ethernet
 
+
+
   # Create instance: qdma_0, and set properties
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:4.0 qdma_0 ]
   set_property -dict [ list \
-   CONFIG.PCIE_BOARD_INTERFACE {pci_express_x8} \
-   CONFIG.PF0_MSIX_CAP_TABLE_SIZE_qdma {000} \
-   CONFIG.PF0_SRIOV_VF_DEVICE_ID {A038} \
-   CONFIG.PF1_SRIOV_VF_DEVICE_ID {A138} \
-   CONFIG.PF2_SRIOV_VF_DEVICE_ID {A238} \
-   CONFIG.PF3_SRIOV_VF_DEVICE_ID {A338} \
-   CONFIG.SYS_RST_N_BOARD_INTERFACE {pcie_perstn} \
-   CONFIG.axi_data_width {256_bit} \
-   CONFIG.axisten_freq {125} \
-   CONFIG.cfg_mgmt_if {false} \
-   CONFIG.coreclk_freq {250} \
+   CONFIG.MAILBOX_ENABLE {true} \
+   CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
+   CONFIG.PF1_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF1_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF1_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF2_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF2_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF2_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF3_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF3_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF3_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.SRIOV_CAP_ENABLE {true} \
+   CONFIG.SRIOV_FIRST_VF_OFFSET {4} \
+   CONFIG.barlite_mb_pf0 {1} \
+   CONFIG.barlite_mb_pf1 {0} \
+   CONFIG.barlite_mb_pf2 {0} \
+   CONFIG.barlite_mb_pf3 {0} \
    CONFIG.dma_intf_sel_qdma {AXI_MM} \
-   CONFIG.en_gt_selection {true} \
-   CONFIG.mode_selection {Basic} \
-   CONFIG.pf0_bar2_scale_qdma {Megabytes} \
-   CONFIG.pf0_device_id {9028} \
-   CONFIG.pf0_msix_enabled_qdma {false} \
-   CONFIG.pf0_pciebar2axibar_2 {0x0000000060000000} \
-   CONFIG.pf1_bar2_scale_qdma {Megabytes} \
-   CONFIG.pf2_bar2_scale_qdma {Megabytes} \
-   CONFIG.pf2_device_id {9228} \
-   CONFIG.pf3_bar2_scale_qdma {Megabytes} \
-   CONFIG.pf3_device_id {9328} \
-   CONFIG.pl_link_cap_max_link_speed {5.0_GT/s} \
-   CONFIG.pl_link_cap_max_link_width {X8} \
-   CONFIG.plltype {QPLL1} \
+   CONFIG.en_axi_st_qdma {false} \
+   CONFIG.flr_enable {true} \
+   CONFIG.mode_selection {Advanced} \
+   CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
+   CONFIG.select_quad {GTY_Quad_227} \
+   CONFIG.pf0_ari_enabled {true} \
+   CONFIG.pf0_bar0_prefetchable_qdma {true} \
+   CONFIG.pf0_bar2_prefetchable_qdma {true} \
+   CONFIG.pf1_bar0_prefetchable_qdma {true} \
+   CONFIG.pf1_bar2_prefetchable_qdma {true} \
+   CONFIG.pf1_msix_enabled_qdma {false} \
+   CONFIG.pf2_bar0_prefetchable_qdma {true} \
+   CONFIG.pf2_bar2_prefetchable_qdma {true} \
+   CONFIG.pf2_msix_enabled_qdma {false} \
+   CONFIG.pf3_bar0_prefetchable_qdma {true} \
+   CONFIG.pf3_bar2_prefetchable_qdma {true} \
+   CONFIG.pf3_msix_enabled_qdma {false} \
+   CONFIG.testname {mm} \
+   CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0
+
+
 
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
@@ -549,14 +564,14 @@ proc create_root_design { parentCell } {
   # Create interface ports
   set clk_user [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 clk_user ]
   set_property -dict [ list \
-   CONFIG.FREQ_HZ {156250000} \
+   CONFIG.FREQ_HZ {100000000} \
    ] $clk_user
 
   set ddr4_sdram_c0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c0 ]
 
   set sysclk0 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 sysclk0 ]
   set_property -dict [ list \
-   CONFIG.FREQ_HZ {300000000} \
+   CONFIG.FREQ_HZ {100000000} \
    ] $sysclk0
 
   set eth_rx_axis [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:axis_rtl:1.0 eth_rx_axis ]
