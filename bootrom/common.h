@@ -2,6 +2,7 @@
 #define _SDBOOT_COMMON_H
 
 #define BOOTROM_DTB_ADDR    0x00010080
+#define MASKROM_MEM_ADDR    0x50000000
 
 // Addresses must be aligned by 0x100
 #define BOOTROM_MEM_ADDR    0x80000000

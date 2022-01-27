@@ -118,6 +118,8 @@ u-boot/u-boot-nodtb.bin: u-boot-patch $(U_BOOT_SRC)
 	  CROSS_COMPILE=$(CROSS_COMPILE_LINUX) \
 	  KCFLAGS='-O1 -gno-column-info' \
 	  all
+	mkdir -p workspace/bin && cp u-boot/u-boot-nodtb.bin workspace/bin/u_boot
+
 
 
 # --- build RISC-V Open Source Supervisor Binary Interface (OpenSBI) ---
@@ -130,9 +132,28 @@ workspace/boot.elf: opensbi/build/platform/vivado-risc-v/firmware/fw_payload.elf
 
 opensbi/build/platform/vivado-risc-v/firmware/fw_payload.elf: $(wildcard patches/opensbi/*) u-boot/u-boot-nodtb.bin
 	mkdir -p opensbi/platform/vivado-risc-v
+	mkdir -p workspace/bin 
 	cp -p patches/opensbi/* opensbi/platform/vivado-risc-v
 	make -C opensbi CROSS_COMPILE=$(CROSS_COMPILE_LINUX) PLATFORM=vivado-risc-v \
-	 FW_PAYLOAD_PATH=`realpath u-boot/u-boot-nodtb.bin`
+	 FW_JUMP_ADDR=0x80200000 FW_PAYLOAD_PATH=`realpath u-boot/u-boot-nodtb.bin` 
+	cp opensbi/build/platform/vivado-risc-v/firmware/fw_jump.bin workspace/bin/opensbi
+
+integrated_launcher/gen/opensbi.h: bootloader
+	mkdir -p boot/integrated_launcher/gen/
+	cd workspace/bin && xxd -i opensbi > ../../boot/integrated_launcher/gen/opensbi.h
+	sed -i 's/unsigned/const static unsigned/g' boot/integrated_launcher/gen/opensbi.h
+
+integrated_launcher/gen/u_boot.h: bootloader
+	mkdir -p boot/integrated_launcher/gen/
+	cd workspace/bin && xxd -i u_boot > ../../boot/integrated_launcher/gen/u_boot.h
+	sed -i 's/unsigned/const static unsigned/g' boot/integrated_launcher/gen/u_boot.h
+
+
+workspace/bin/datgen:
+	mkdir -p workspace/bin
+	g++ -std=c++17 patches/datgen.cpp -o workspace/bin/datgen
+
+
 
 
 # --- generate HDL ---
@@ -182,6 +203,14 @@ CHISEL_SRC_DIRS = \
 CHISEL_SRC := $(foreach path, $(CHISEL_SRC_DIRS), $(shell test -d $(path) && find $(path) -iname "*.scala"))
 FIRRTL = java -Xmx12G -Xss8M $(JAVA_OPTIONS) -cp target/scala-2.12/classes:rocket-chip/rocketchip.jar firrtl.stage.FirrtlMain
 
+# Generate payload 
+workspace/$(CONFIG)/payload.dat: workspace/bin/datgen integrated_launcher/gen/u_boot.h integrated_launcher/gen/opensbi.h
+	make -C  boot/integrated_launcher  CROSS_COMPILE=$(CROSS_COMPILE_NO_OS_TOOLS)  all
+	./workspace/bin/datgen boot/integrated_launcher/launcher.img > workspace/$(CONFIG)/payload.dat
+
+
+
+
 # Generate default device tree - not including peripheral devices or board specific data
 workspace/$(CONFIG)/system.dts: $(CHISEL_SRC) rocket-chip/bootrom/bootrom.img
 	if [ -s patches/rocket-chip.patch ] ; then cd rocket-chip && ( git apply -R --check ../patches/rocket-chip.patch 2>/dev/null || git apply ../patches/rocket-chip.patch ) ; fi
@@ -204,7 +233,7 @@ workspace/$(CONFIG)/system-$(BOARD)/Vivado.$(CONFIG_SCALA).fir: workspace/$(CONF
 	sed -i "s#local-mac-address = \[.*\]#local-mac-address = [$(ETHER_MAC)]#g" bootrom/system.dts
 	sed -i "s#phy-mode = \".*\"#phy-mode = \"$(ETHER_PHY)\"#g" bootrom/system.dts
 	sed -i "/interrupts-extended = <&.* 65535>;/d" bootrom/system.dts
-	make -C bootrom CROSS_COMPILE="$(CROSS_COMPILE_NO_OS_TOOLS)" CFLAGS="$(CROSS_COMPILE_NO_OS_FLAGS)" BOARD=$(BOARD) clean bootrom.img
+	make -C bootrom CROSS_COMPILE="$(CROSS_COMPILE_NO_OS_TOOLS)" CFLAGS="$(CROSS_COMPILE_NO_OS_FLAGS)" BOARD=$(BOARD) INTEGRATED_LAUNCHER=1 clean bootrom.img
 	mv bootrom/system.dts workspace/$(CONFIG)/system-$(BOARD).dts
 	mv bootrom/bootrom.img workspace/bootrom.img
 	$(SBT) "runMain freechips.rocketchip.system.Generator -td workspace/$(CONFIG)/system-$(BOARD) -T Vivado.RocketSystem -C Vivado.$(CONFIG_SCALA)"
@@ -219,9 +248,11 @@ workspace/$(CONFIG)/system-$(BOARD).v: workspace/$(CONFIG)/system-$(BOARD)/Vivad
 	  -td workspace/$(CONFIG)/ \
 	  -fct firrtl.passes.InlineInstances
 	rocket-chip/scripts/vlsi_mem_gen workspace/$(CONFIG)/system.conf >workspace/$(CONFIG)/srams.v
+	rocket-chip/scripts/vlsi_rom_gen workspace/$(CONFIG)/system-$(BOARD)/Vivado.$(CONFIG_SCALA).rom.conf payload.dat > workspace/$(CONFIG)/payload.v
+
 
 # Generate Rocket SoC wrapper for Vivado
-workspace/$(CONFIG)/rocket.vhdl: workspace/$(CONFIG)/system-$(BOARD).v
+workspace/$(CONFIG)/rocket.vhdl: workspace/$(CONFIG)/system-$(BOARD).v workspace/$(CONFIG)/payload.dat
 	mkdir -p vhdl-wrapper/bin
 	javac -g -nowarn \
 	  -sourcepath vhdl-wrapper/src -d vhdl-wrapper/bin \
@@ -294,7 +325,7 @@ $(bitstream): $(synthesis)
 	echo "reset_run impl_1" >>$(proj_path)/make-bitstream.tcl
 	echo "launch_runs -to_step write_bitstream -jobs $(MAX_THREADS) impl_1" >>$(proj_path)/make-bitstream.tcl
 	echo "wait_on_run impl_1" >>$(proj_path)/make-bitstream.tcl
-	$(vivado) -source $(proj_path)/make-bitstream.tcl
+	faketime '2021-12-24 08:15:42' $(vivado) -source $(proj_path)/make-bitstream.tcl
 	if find $(proj_path) -name "*.log" -exec cat {} \; | grep 'ERROR: ' ; then exit 1 ; fi
 
 $(mcs_file) $(prm_file): $(bitstream) workspace/boot.elf

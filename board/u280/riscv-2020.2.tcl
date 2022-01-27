@@ -342,6 +342,10 @@ proc create_hier_cell_IO { parentCell nameHier } {
    CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0
 
+  
+  set qdma_ready [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 qdma_ready ]
+  connect_bd_net -net qdma_ready_dout [get_bd_pins $qdma_0/qsts_out_rdy] [get_bd_pins $qdma_0/tm_dsc_sts_rdy] [get_bd_pins qdma_ready/dout]
+
 
 
   # Create instance: smartconnect_0, and set properties

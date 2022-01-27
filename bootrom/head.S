@@ -21,6 +21,8 @@ _start_bootrom:
 .section .text.hang, "ax", @progbits
 .globl _hang
 _hang:
+  li a5,MASKROM_MEM_ADDR
+  jr a5
   csrr a0, mhartid
   la a1, _dtb
   la s0, _ram

@@ -63,6 +63,7 @@ public class Main {
 
     private static int interrupt_bits = 0;
 
+    private static String rocket_address_range;
     private static final HashSet<String> modules = new HashSet<String>();
 
     private static void ln(String s) {
@@ -341,6 +342,7 @@ public class Main {
         String s = null;
         String bus = null;
         for (BusSignal sig : axi_signals) {
+
             if (s != null) {
                 ln(s + ";");
                 if (!sig.bus_name.equals(bus)) ln("");
@@ -427,6 +429,7 @@ public class Main {
             s += d.out ? "out" : "in ";
             if (d.range != null) {
                 s += " std_logic_vector(" + getRangeString(d.range) + ")";
+                if(id.equals("mem_axi4_0_aw_bits_addr")) rocket_address_range = getRangeString(d.range);
             }
             else {
                 s += " std_logic";
@@ -473,6 +476,18 @@ public class Main {
             ln("    attribute ASYNC_REG of interrupts_ss2 : signal is \"TRUE\";");
             ln("    attribute ASYNC_REG of interrupts_sync: signal is \"TRUE\";");
         }
+
+        ln("    signal offset : std_logic_vector(31 downto 0) := x\"80000000\";");
+
+        ln("    signal mem_axi4_araddr_buf : std_logic_vector("+rocket_address_range+");");
+        ln("    signal mem_axi4_awaddr_buf : std_logic_vector("+rocket_address_range+");");
+
+    }
+
+    private static void generateOffsetLogic()
+    {
+        ln("    mem_axi4_araddr <=  std_logic_vector(unsigned(mem_axi4_araddr_buf("+rocket_address_range+")) - unsigned(offset(31 downto 0)));");
+        ln("    mem_axi4_awaddr <=  std_logic_vector(unsigned(mem_axi4_awaddr_buf("+rocket_address_range+")) - unsigned(offset(31 downto 0)));");
     }
 
     private static void generateResetLogic() {
@@ -555,6 +570,8 @@ public class Main {
             String nm = decl.id.getText();
             String dst = null;
             BusSignal sig = sig_map.get(nm);
+
+
             if (sig != null) dst = sig.signal_name;
             else if (nm.equals("reset")) dst = "riscv_reset";
             else if (nm.equals("debug_clock")) dst = "clock";
@@ -584,6 +601,11 @@ public class Main {
             else if (nm.startsWith("resetctrl_resetctrl_hartIsInReset")) dst = "'0'";
             else if (nm.equals("interrupts")) dst = "interrupts_sync";
             else dst = nm;
+
+            if (nm.equals("mem_axi4_0_aw_bits_addr")) { dst = "mem_axi4_awaddr_buf"; }
+            else if (nm.equals("mem_axi4_0_ar_bits_addr")) { dst = "mem_axi4_araddr_buf"; }
+
+
             if (s != null) ln(s + ',');
             while (nm.length() < id_len) nm += ' ';
             s = "        " + nm + " => " + dst;
@@ -650,6 +672,7 @@ public class Main {
         ln("");
         ln("begin");
 
+        generateOffsetLogic();
         generateResetLogic();
         if (interrupt_bits > 0) generateInterruptSynchronizer();
         if (jtag_bus != null) ln("    jtag_tdt <= not enable_tdo;");

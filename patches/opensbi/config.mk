@@ -8,7 +8,7 @@ PLATFORM_RISCV_XLEN = 64
 
 FW_TEXT_START=0x80000000
 FW_DYNAMIC=n
-FW_JUMP=n
+FW_JUMP=y
 
 # Firmware with payload configuration.
 FW_PAYLOAD=y

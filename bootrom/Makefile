@@ -9,7 +9,9 @@ CCFLAGS += -mcmodel=medany -Os -ffunction-sections -Wall
 CCFLAGS += -fno-pic -fno-common -g -I.
 
 LFLAGS = -static -nostartfiles -T bootrom.lds -Wl,--gc-sections
-
+ifdef INTEGRATED_LAUNCHER
+LFGALS += -DINTEGRATED_LAUNCHER
+endif
 dts := system.dts
 dtb := system.dtb
 
@@ -30,7 +32,7 @@ include ../board/$(BOARD)/bootrom.inc
 else
 
 %.elf: $(dtb) head.S kprintf.c bootrom.c ff.c ffunicode.c
-	$(CC) $(CCFLAGS) -DDEVICE_TREE='"$(dtb)"' $(LFLAGS) -o $@ head.S kprintf.c bootrom.c ff.c ffunicode.c
+	$(CC) $(CCFLAGS) -DDEVICE_TREE='"$(dtb)"' $(LFLAGS) -o $@ head.S kprintf.c bootrom.c ff.c ffunicode.c 
 
 endif
 

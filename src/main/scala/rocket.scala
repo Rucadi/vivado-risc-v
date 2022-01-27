@@ -17,6 +17,8 @@ class RocketSystem(implicit p: Parameters) extends RocketSubsystem
     with CanHaveSlaveAXI4Port
 {
   val bootROM  = p(BootROMLocated(location)).map { BootROM.attach(_, this, CBUS) }
+  val maskROMs = p(MaskROMLocated(location)).map { MaskROM.attach(_, this, CBUS) }
+
   override lazy val module = new RocketSystemModuleImp(this)
 }
 
@@ -40,6 +42,20 @@ class WithGemmini(mesh_size: Int, bus_bits: Int) extends Config((site, here, up)
 class WithDebugProgBuf(prog_buf_words: Int, imp_break: Boolean) extends Config((site, here, up) => {
   case DebugModuleKey => up(DebugModuleKey, site).map(_.copy(nProgramBufferWords = prog_buf_words, hasImplicitEbreak = imp_break))
 })
+
+
+/* With ROM JTAG port */
+class Rocket64MeepConfig extends Config(
+  new WithNBreakpoints(8) ++
+  new WithJtagDTM         ++
+  new WithExtMemSize((0x40000000L*16)) ++ //32GB
+  new WithNBigCores(4)    ++
+  new WithROMName("payload") ++
+  new WithROMSize(x"9_0000") ++
+  new WithROMLocation(x"5000_0000") ++
+  new RocketBaseConfig)
+
+
 
 /*
  * WithExtMemSize(0x80000000L) = 2GB is max supported by the base config.
@@ -150,11 +166,12 @@ class Rocket64b4m4 extends Config(
   new WithInclusiveCache ++
   new RocketWideBusConfig)
 
-/* With exposed JTAG port */
+/* With exposed JTAG port 16GB*/
 class Rocket64b2j extends Config(
   new WithNBreakpoints(8) ++
   new WithJtagDTM         ++
   new WithNBigCores(2)    ++
+  new WithExtMemSize(0x400000000L) ++
   new RocketBaseConfig)
 
 /* Smaller debug module */

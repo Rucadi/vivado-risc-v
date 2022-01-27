@@ -1,3 +1,16 @@
+From 5980159f660aa5a427c4973bbf3b6fe1c990e5e9 Mon Sep 17 00:00:00 2001
+From: ruben <ruben.cano96@gmail.com>
+Date: Thu, 27 Jan 2022 10:49:38 +0100
+Subject: [PATCH 1/1] patch
+
+---
+ src/main/scala/devices/debug/DMI.scala        |  2 +-
+ .../scala/devices/debug/DebugTransport.scala  |  2 +-
+ src/main/scala/devices/debug/Periphery.scala  |  2 +-
+ src/main/scala/devices/tilelink/MaskROM.scala |  8 +++--
+ src/main/scala/subsystem/Configs.scala        | 35 ++++++++++++++++++-
+ 5 files changed, 43 insertions(+), 6 deletions(-)
+
 diff --git a/src/main/scala/devices/debug/DMI.scala b/src/main/scala/devices/debug/DMI.scala
 index 5561c4850..259cd8fcc 100644
 --- a/src/main/scala/devices/debug/DMI.scala
@@ -25,7 +38,7 @@ index 02659b4f9..31143570e 100644
    val part_number = Input(UInt(16.W))
    val version = Input(UInt(4.W))
 diff --git a/src/main/scala/devices/debug/Periphery.scala b/src/main/scala/devices/debug/Periphery.scala
-index 812dffb6f..0ffd127ae 100644
+index 812dffb6f..6352bff91 100644
 --- a/src/main/scala/devices/debug/Periphery.scala
 +++ b/src/main/scala/devices/debug/Periphery.scala
 @@ -45,7 +45,7 @@ class ClockedAPBBundle(params: APBBundleParameters) extends APBBundle(params) {
@@ -37,12 +50,99 @@ index 812dffb6f..0ffd127ae 100644
    val clockeddmi = p(ExportDebug).dmi.option(Flipped(new ClockedDMIIO()))
    val systemjtag = p(ExportDebug).jtag.option(new SystemJTAGIO)
    val apb = p(ExportDebug).apb.option(Flipped(new ClockedAPBBundle(APBBundleParameters(addrBits=12, dataBits=32))))
-@@ -173,7 +173,7 @@ trait HasPeripheryDebugModuleImp extends LazyModuleImp {
-     outer.debugOpt.map { outerdebug => 
-       outerdebug.module.io.dmi.get.dmi <> dtm.io.dmi
-       outerdebug.module.io.dmi.get.dmiClock := sj.jtag.TCK
--      outerdebug.module.io.dmi.get.dmiReset := sj.reset
-+      outerdebug.module.io.dmi.get.dmiReset := sj.reset.asBool
-     }
-     dtm
+diff --git a/src/main/scala/devices/tilelink/MaskROM.scala b/src/main/scala/devices/tilelink/MaskROM.scala
+index 0fe9673e2..1fb50ea2b 100644
+--- a/src/main/scala/devices/tilelink/MaskROM.scala
++++ b/src/main/scala/devices/tilelink/MaskROM.scala
+@@ -9,7 +9,11 @@ import freechips.rocketchip.subsystem.{Attachable, HierarchicalLocation, TLBusWr
+ import freechips.rocketchip.tilelink._
+ import freechips.rocketchip.util._
+ 
+-case class MaskROMParams(address: BigInt, name: String, depth: Int = 2048, width: Int = 32)
++case class MaskROMParams(
++  address: BigInt = 0x50000000,
++  name: String ="bootromNEW",
++  depth: Int = 2048,
++  width: Int = 32)
+ 
+ class TLMaskROM(c: MaskROMParams)(implicit p: Parameters) extends LazyModule {
+   val beatBytes = c.width/8
+@@ -57,7 +61,7 @@ class TLMaskROM(c: MaskROMParams)(implicit p: Parameters) extends LazyModule {
    }
+ }
+ 
+-case class MaskROMLocated(loc: HierarchicalLocation) extends Field[Seq[MaskROMParams]](Nil)
++case class MaskROMLocated(loc: HierarchicalLocation) extends Field[Option[MaskROMParams]](None)
+ 
+ object MaskROM {
+   def attach(params: MaskROMParams, subsystem: Attachable, where: TLBusWrapperLocation)
+diff --git a/src/main/scala/subsystem/Configs.scala b/src/main/scala/subsystem/Configs.scala
+index 03de3af1a..284fa0895 100644
+--- a/src/main/scala/subsystem/Configs.scala
++++ b/src/main/scala/subsystem/Configs.scala
+@@ -37,6 +37,7 @@ class BaseSubsystemConfig extends Config ((site, here, up) => {
+     beatBytes = site(XLen)/8,
+     blockBytes = site(CacheBlockBytes))
+   // Additional device Parameters
++  case MaskROMLocated(InSubsystem)  => Some(MaskROMParams())
+   case BootROMLocated(InSubsystem) => Some(BootROMParams(contentFileName = "./bootrom/bootrom.img"))
+   case SubsystemExternalResetVectorKey => false
+   case DebugModuleKey => Some(DefaultDebugModuleParams(site(XLen)))
+@@ -89,7 +90,9 @@ class WithNBigCores(n: Int, overrideIdOffset: Option[Int] = None) extends Config
+     val prev = up(RocketTilesKey, site)
+     val idOffset = overrideIdOffset.getOrElse(prev.size)
+     val big = RocketTileParams(
+-      core   = RocketCoreParams(mulDiv = Some(MulDivParams(
++      core   = RocketCoreParams(
++        haveCFlush = true,
++        mulDiv = Some(MulDivParams(
+         mulUnroll = 8,
+         mulEarlyOut = true,
+         divEarlyOut = true))),
+@@ -326,6 +329,21 @@ class WithBootROMFile(bootROMFile: String) extends Config((site, here, up) => {
+   case BootROMLocated(x) => up(BootROMLocated(x), site).map(_.copy(contentFileName = bootROMFile))
+ })
+ 
++
++class WithROMName(nameROM: String) extends Config((site, here, up) => {
++  case MaskROMLocated(x) => up(MaskROMLocated(x), site).map(_.copy(name = nameROM))
++})
++
++class WithROMSize(sizeROM: BigInt) extends Config((site, here, up) => {
++  case MaskROMLocated(x) => up(MaskROMLocated(x), site).map(_.copy(width = 32, depth=(sizeROM/4).toInt))
++})
++
++
++class WithROMLocation(locROM: BigInt) extends Config((site, here, up) => {
++  case MaskROMLocated(x) => up(MaskROMLocated(x), site).map(_.copy(address = locROM))
++})
++
++
+ class WithSynchronousRocketTiles extends Config((site, here, up) => {
+   case RocketCrossingKey => up(RocketCrossingKey, site) map { r =>
+     r.copy(crossingType = SynchronousCrossing())
+@@ -400,6 +418,21 @@ class WithDefaultMemPort extends Config((site, here, up) => {
+                       idBits = 4), 1))
+ })
+ 
++
++
++class WithExtMemLocation(n: BigInt) extends Config((site, here, up) => {
++  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(base = n)))
++})
++
++class WithMMIOLocation(n: BigInt) extends Config((site, here, up) => {
++  case ExtBus => up(ExtBus, site).map(x => x.copy(base = n))
++})
++class WithMMIOMemSize(n: BigInt) extends Config((site, here, up) => {
++  case ExtBus => up(ExtBus, site).map(x => x.copy(size = n))
++})
++
++
++
+ class WithNoMemPort extends Config((site, here, up) => {
+   case ExtMem => None
+ })
+-- 
+2.25.1
+
