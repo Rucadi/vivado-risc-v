@@ -27,7 +27,8 @@ module ethernet_u280 #(
     // Timestamping configuration (port)
     parameter PTP_TS_ENABLE = 0,
     parameter TX_PTP_TS_FIFO_DEPTH = 32,
-    parameter RX_PTP_TS_FIFO_DEPTH = 32
+    parameter RX_PTP_TS_FIFO_DEPTH = 32,
+    parameter qsfp_number = 0
 
 ) (
 
@@ -245,62 +246,122 @@ wire [1:0] qsfp0_gt_rxheadervalid_1;
 wire [63:0] qsfp0_gt_rxdata_1;
 wire [1:0] qsfp0_gt_rxdatavalid_1;
 
-gtwizard_ultrascale_0
-qsfp0_gt1_inst (
-    .gtwiz_userclk_tx_active_in(gt_userclk_tx_active),
-    .gtwiz_userclk_rx_active_in(gt_userclk_rx_active),
+    if(qsfp_number == 0) begin
+        gtwizard_ultrascale_0
+        qsfp0_gt1_inst (
+            .gtwiz_userclk_tx_active_in(gt_userclk_tx_active),
+            .gtwiz_userclk_rx_active_in(gt_userclk_rx_active),
 
-    .gtwiz_reset_clk_freerun_in(clk_125mhz_int),
-    .gtwiz_reset_all_in(rst_125mhz_int),
+            .gtwiz_reset_clk_freerun_in(clk_125mhz_int),
+            .gtwiz_reset_all_in(rst_125mhz_int),
 
-    .gtwiz_reset_tx_pll_and_datapath_in(1'b0),
-    .gtwiz_reset_tx_datapath_in(1'b0),
+            .gtwiz_reset_tx_pll_and_datapath_in(1'b0),
+            .gtwiz_reset_tx_datapath_in(1'b0),
 
-    .gtwiz_reset_rx_pll_and_datapath_in(1'b0),
-    .gtwiz_reset_rx_datapath_in(1'b0),
+            .gtwiz_reset_rx_pll_and_datapath_in(1'b0),
+            .gtwiz_reset_rx_datapath_in(1'b0),
 
-    .gtwiz_reset_rx_cdr_stable_out(),
+            .gtwiz_reset_rx_cdr_stable_out(),
 
-    .gtwiz_reset_tx_done_out(gt_reset_tx_done),
-    .gtwiz_reset_rx_done_out(gt_reset_rx_done),
+            .gtwiz_reset_tx_done_out(gt_reset_tx_done),
+            .gtwiz_reset_rx_done_out(gt_reset_rx_done),
 
-    .gtrefclk00_in(qsfp0_mgt_refclk_1),
+            .gtrefclk00_in(qsfp0_mgt_refclk_1),
 
-    .qpll0outclk_out(),
-    .qpll0outrefclk_out(),
+            .qpll0outclk_out(),
+            .qpll0outrefclk_out(),
 
-    .gtyrxn_in(qsfp0_rx1_n),
-    .gtyrxp_in(qsfp0_rx1_p),
+            .gtyrxn_in(qsfp0_rx1_n),
+            .gtyrxp_in(qsfp0_rx1_p),
 
-    .rxusrclk_in(rx_clk),
-    .rxusrclk2_in(rx_clk),
+            .rxusrclk_in(rx_clk),
+            .rxusrclk2_in(rx_clk),
 
-    .gtwiz_userdata_tx_in(qsfp0_gt_txdata_1),
-    .txheader_in(qsfp0_gt_txheader_1),
-    .txsequence_in(1'b0),
+            .gtwiz_userdata_tx_in(qsfp0_gt_txdata_1),
+            .txheader_in(qsfp0_gt_txheader_1),
+            .txsequence_in(1'b0),
 
-    .txusrclk_in(tx_clk),
-    .txusrclk2_in(tx_clk),
+            .txusrclk_in(tx_clk),
+            .txusrclk2_in(tx_clk),
 
-    .gtpowergood_out(qsfp_gtpowergood),
+            .gtpowergood_out(qsfp_gtpowergood),
 
-    .gtytxn_out(qsfp0_tx1_n),
-    .gtytxp_out(qsfp0_tx1_p),
+            .gtytxn_out(qsfp0_tx1_n),
+            .gtytxp_out(qsfp0_tx1_p),
 
-    .rxgearboxslip_in(qsfp0_gt_rxgearboxslip_1),
-    .gtwiz_userdata_rx_out(qsfp0_gt_rxdata_1),
-    .rxdatavalid_out(qsfp0_gt_rxdatavalid_1),
-    .rxheader_out(qsfp0_gt_rxheader_1),
-    .rxheadervalid_out(qsfp0_gt_rxheadervalid_1),
-    .rxoutclk_out(sfp_gt_rxclkout),
-    .rxpmaresetdone_out(gt_rxpmaresetdone),
-    .rxprgdivresetdone_out(gt_rxprgdivresetdone),
-    .rxstartofseq_out(),
+            .rxgearboxslip_in(qsfp0_gt_rxgearboxslip_1),
+            .gtwiz_userdata_rx_out(qsfp0_gt_rxdata_1),
+            .rxdatavalid_out(qsfp0_gt_rxdatavalid_1),
+            .rxheader_out(qsfp0_gt_rxheader_1),
+            .rxheadervalid_out(qsfp0_gt_rxheadervalid_1),
+            .rxoutclk_out(sfp_gt_rxclkout),
+            .rxpmaresetdone_out(gt_rxpmaresetdone),
+            .rxprgdivresetdone_out(gt_rxprgdivresetdone),
+            .rxstartofseq_out(),
 
-    .txoutclk_out(sfp_gt_txclkout),
-    .txpmaresetdone_out(gt_txpmaresetdone),
-    .txprgdivresetdone_out(gt_txprgdivresetdone)
-);
+            .txoutclk_out(sfp_gt_txclkout),
+            .txpmaresetdone_out(gt_txpmaresetdone),
+            .txprgdivresetdone_out(gt_txprgdivresetdone)
+        );
+       end
+else begin
+        gtwizard_ultrascale_1
+        qsfp0_gt1_inst (
+            .gtwiz_userclk_tx_active_in(gt_userclk_tx_active),
+            .gtwiz_userclk_rx_active_in(gt_userclk_rx_active),
+
+            .gtwiz_reset_clk_freerun_in(clk_125mhz_int),
+            .gtwiz_reset_all_in(rst_125mhz_int),
+
+            .gtwiz_reset_tx_pll_and_datapath_in(1'b0),
+            .gtwiz_reset_tx_datapath_in(1'b0),
+
+            .gtwiz_reset_rx_pll_and_datapath_in(1'b0),
+            .gtwiz_reset_rx_datapath_in(1'b0),
+
+            .gtwiz_reset_rx_cdr_stable_out(),
+
+            .gtwiz_reset_tx_done_out(gt_reset_tx_done),
+            .gtwiz_reset_rx_done_out(gt_reset_rx_done),
+
+            .gtrefclk00_in(qsfp0_mgt_refclk_1),
+
+            .qpll0outclk_out(),
+            .qpll0outrefclk_out(),
+
+            .gtyrxn_in(qsfp0_rx1_n),
+            .gtyrxp_in(qsfp0_rx1_p),
+
+            .rxusrclk_in(rx_clk),
+            .rxusrclk2_in(rx_clk),
+
+            .gtwiz_userdata_tx_in(qsfp0_gt_txdata_1),
+            .txheader_in(qsfp0_gt_txheader_1),
+            .txsequence_in(1'b0),
+
+            .txusrclk_in(tx_clk),
+            .txusrclk2_in(tx_clk),
+
+            .gtpowergood_out(qsfp_gtpowergood),
+
+            .gtytxn_out(qsfp0_tx1_n),
+            .gtytxp_out(qsfp0_tx1_p),
+
+            .rxgearboxslip_in(qsfp0_gt_rxgearboxslip_1),
+            .gtwiz_userdata_rx_out(qsfp0_gt_rxdata_1),
+            .rxdatavalid_out(qsfp0_gt_rxdatavalid_1),
+            .rxheader_out(qsfp0_gt_rxheader_1),
+            .rxheadervalid_out(qsfp0_gt_rxheadervalid_1),
+            .rxoutclk_out(sfp_gt_rxclkout),
+            .rxpmaresetdone_out(gt_rxpmaresetdone),
+            .rxprgdivresetdone_out(gt_rxprgdivresetdone),
+            .rxstartofseq_out(),
+
+            .txoutclk_out(sfp_gt_txclkout),
+            .txpmaresetdone_out(gt_txpmaresetdone),
+            .txprgdivresetdone_out(gt_txprgdivresetdone)
+        );
+end
 
 sync_reset #(
     .N(4)

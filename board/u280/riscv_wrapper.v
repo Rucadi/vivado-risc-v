@@ -46,7 +46,17 @@ module riscv_wrapper (
     input  wire       qsfp0_mgt_refclk_1_p,
     input  wire       qsfp0_mgt_refclk_1_n,
     output wire       qsfp0_refclk_oe_b,
-    output wire       qsfp0_refclk_fs
+    output wire       qsfp0_refclk_fs,
+
+    /* QSFP28 #1 */
+    output wire         qsfp1_tx1_p,
+    output wire         qsfp1_tx1_n,
+    input  wire         qsfp1_rx1_p,
+    input  wire         qsfp1_rx1_n,
+    input  wire       qsfp1_mgt_refclk_1_p,
+    input  wire       qsfp1_mgt_refclk_1_n,
+    output wire       qsfp1_refclk_oe_b,
+    output wire       qsfp1_refclk_fs
     );
 
 wire iic_main_scl_i;
@@ -73,8 +83,12 @@ IOBUF iic_main_sda_iobuf (
 wire eth_clock_ok;
 wire eth_clock;
 
+wire eth2_clock_ok;
+wire eth2_clock;
+
 // Ethernet GT user clock
 wire eth_gt_user_clock;
+wire eth2_gt_user_clock;
 
 wire [63:0 ]eth_rx_axis_tdata;
 wire [7:0] eth_rx_axis_tkeep;
@@ -89,6 +103,20 @@ wire eth_tx_axis_tlast;
 wire eth_tx_axis_tready;
 wire eth_tx_axis_tuser;
 wire eth_tx_axis_tvalid;
+
+wire [63:0 ]eth2_rx_axis_tdata;
+wire [7:0] eth2_rx_axis_tkeep;
+wire eth2_rx_axis_tlast;
+wire eth2_rx_axis_tready;
+wire eth2_rx_axis_tuser;
+wire eth2_rx_axis_tvalid;
+wire [15:0] eth2_status;
+wire [63:0] eth2_tx_axis_tdata;
+wire [7:0] eth2_tx_axis_tkeep;
+wire eth2_tx_axis_tlast;
+wire eth2_tx_axis_tready;
+wire eth2_tx_axis_tuser;
+wire eth2_tx_axis_tvalid;
 
 riscv riscv_i (
     .clk_user_clk_n(clk_user_clk_n),
@@ -172,9 +200,38 @@ ethernet_u280 ethernet_u280_i (
     .qsfp0_mgt_refclk_1_n(qsfp0_mgt_refclk_1_n),
     .qsfp0_refclk_oe_b(qsfp0_refclk_oe_b),
     .qsfp0_refclk_fs(qsfp0_refclk_fs)
+);
 
+ethernet_u280  #(.qsfp_number(1)) ethernet_u280_i1(
+    .clock_ok(eth2_clock_ok),
+    .clock(eth2_clock),
 
+    .eth_gt_user_clock(eth2_gt_user_clock),
 
+    /* Ethernet #0 AXI Stream */
+    .eth0_rx_axis_tdata(eth2_rx_axis_tdata),
+    .eth0_rx_axis_tkeep(eth2_rx_axis_tkeep),
+    .eth0_rx_axis_tlast(eth2_rx_axis_tlast),
+    .eth0_rx_axis_tready(eth2_rx_axis_tready),
+    .eth0_rx_axis_tuser(eth2_rx_axis_tuser),
+    .eth0_rx_axis_tvalid(eth2_rx_axis_tvalid),
+    .eth0_status(eth2_status),
+    .eth0_tx_axis_tdata(eth2_tx_axis_tdata),
+    .eth0_tx_axis_tkeep(eth2_tx_axis_tkeep),
+    .eth0_tx_axis_tlast(eth2_tx_axis_tlast),
+    .eth0_tx_axis_tready(eth2_tx_axis_tready),
+    .eth0_tx_axis_tuser(eth2_tx_axis_tuser),
+    .eth0_tx_axis_tvalid(eth2_tx_axis_tvalid),
+
+    /* QSFP28 #0 */
+    .qsfp0_tx1_p(qsfp1_tx1_p),
+    .qsfp0_tx1_n(qsfp1_tx1_n),
+    .qsfp0_rx1_p(qsfp1_rx1_p),
+    .qsfp0_rx1_n(qsfp1_rx1_n),
+    .qsfp0_mgt_refclk_1_p(qsfp1_mgt_refclk_1_p),
+    .qsfp0_mgt_refclk_1_n(qsfp1_mgt_refclk_1_n),
+    .qsfp0_refclk_oe_b(qsfp1_refclk_oe_b),
+    .qsfp0_refclk_fs(qsfp1_refclk_fs)
 );
 
 endmodule
