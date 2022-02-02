@@ -19,6 +19,24 @@ module riscv_wrapper (
     output wire ddr4_sdram_c0_reset_n,
     input  wire sysclk0_clk_n,
     input  wire sysclk0_clk_p,
+    
+    output wire ddr4_sdram_c1_act_n,
+    output wire [16:0]ddr4_sdram_c1_adr,
+    output wire [1:0]ddr4_sdram_c1_ba,
+    output wire [1:0]ddr4_sdram_c1_bg,
+    output wire ddr4_sdram_c1_ck_c,
+    output wire ddr4_sdram_c1_ck_t,
+    output wire ddr4_sdram_c1_cke,
+    output wire ddr4_sdram_c1_cs_n,
+    inout  wire [71:0]ddr4_sdram_c1_dq,
+    inout  wire [17:0]ddr4_sdram_c1_dqs_c,
+    inout  wire [17:0]ddr4_sdram_c1_dqs_t,
+    output wire ddr4_sdram_c1_odt,
+    output wire ddr4_sdram_c1_par,
+    output wire ddr4_sdram_c1_reset_n,
+    
+    input  wire sysclk1_clk_n,
+    input  wire sysclk1_clk_p,
 
     /* IIC */
     inout  wire iic_main_scl_io,
@@ -135,8 +153,29 @@ riscv riscv_i (
     .ddr4_sdram_c0_odt(ddr4_sdram_c0_odt),
     .ddr4_sdram_c0_par(ddr4_sdram_c0_par),
     .ddr4_sdram_c0_reset_n(ddr4_sdram_c0_reset_n),
+       
+     .ddr4_sdram_c1_act_n(ddr4_sdram_c1_act_n),
+    .ddr4_sdram_c1_adr(ddr4_sdram_c1_adr),
+    .ddr4_sdram_c1_ba(ddr4_sdram_c1_ba),
+    .ddr4_sdram_c1_bg(ddr4_sdram_c1_bg),
+    .ddr4_sdram_c1_ck_c(ddr4_sdram_c1_ck_c),
+    .ddr4_sdram_c1_ck_t(ddr4_sdram_c1_ck_t),
+    .ddr4_sdram_c1_cke(ddr4_sdram_c1_cke),
+    .ddr4_sdram_c1_cs_n(ddr4_sdram_c1_cs_n),
+    .ddr4_sdram_c1_dq(ddr4_sdram_c1_dq),
+    .ddr4_sdram_c1_dqs_c(ddr4_sdram_c1_dqs_c),
+    .ddr4_sdram_c1_dqs_t(ddr4_sdram_c1_dqs_t),
+    .ddr4_sdram_c1_odt(ddr4_sdram_c1_odt),
+    .ddr4_sdram_c1_par(ddr4_sdram_c1_par),
+    .ddr4_sdram_c1_reset_n(ddr4_sdram_c1_reset_n),
+    
+    
     .sysclk0_clk_n(sysclk0_clk_n),
     .sysclk0_clk_p(sysclk0_clk_p),
+    
+    .sysclk1_clk_n(sysclk1_clk_n),
+    .sysclk1_clk_p(sysclk1_clk_p),
+    
     .eth_clock_ok(eth_clock_ok),
     .eth_clock(eth_clock),
     .eth_gt_user_clock(eth_gt_user_clock),
