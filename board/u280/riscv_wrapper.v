@@ -154,7 +154,7 @@ riscv riscv_i (
     .ddr4_sdram_c0_par(ddr4_sdram_c0_par),
     .ddr4_sdram_c0_reset_n(ddr4_sdram_c0_reset_n),
        
-     .ddr4_sdram_c1_act_n(ddr4_sdram_c1_act_n),
+    .ddr4_sdram_c1_act_n(ddr4_sdram_c1_act_n),
     .ddr4_sdram_c1_adr(ddr4_sdram_c1_adr),
     .ddr4_sdram_c1_ba(ddr4_sdram_c1_ba),
     .ddr4_sdram_c1_bg(ddr4_sdram_c1_bg),
