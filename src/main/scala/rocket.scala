@@ -47,9 +47,8 @@ class WithDebugProgBuf(prog_buf_words: Int, imp_break: Boolean) extends Config((
 /* With ROM JTAG port */
 class Rocket64MeepConfig extends Config(
   new WithNBreakpoints(8) ++
-  new WithJtagDTM         ++
-  new WithExtMemSize((0x40000000L*16)) ++ //32GB
-  new WithNBigCores(4)    ++
+  new WithExtMemSize((0x40000000L*32)) ++ //16GB
+  new WithNBigCores(2)    ++
   new WithROMName("payload") ++
   new WithROMSize(x"9_0000") ++
   new WithROMLocation(x"5000_0000") ++
