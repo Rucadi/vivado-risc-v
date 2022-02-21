@@ -30,7 +30,7 @@
             interrupt-parent = <&{/soc/interrupt-controller@c000000}>;
             interrupts = <3>;
         };
-        eth1: eth0@60030000 {
+        eth1: eth1@60030000 {
             compatible = "riscv,axi-ethernet-1.0";
             reg = <0x60030000 0x10000>;
             phy-mode = "10gbase-r";
