@@ -1,27 +1,36 @@
 [submodule "rocket-chip"]
 	path = rocket-chip
 	url = https://github.com/ucb-bar/rocket-chip.git
+	shallow = true
 [submodule "u-boot"]
 	path = u-boot
 	url = https://github.com/u-boot/u-boot.git
+	shallow = true
 [submodule "linux-stable"]
 	path = linux-stable
 	url = https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+	shallow = true
 [submodule "ethernet/verilog-ethernet"]
 	path = ethernet/verilog-ethernet
 	url = https://github.com/alexforencich/verilog-ethernet.git
+	shallow = true
 [submodule "generators/sifive-cache"]
 	path = generators/sifive-cache
 	url = https://github.com/sifive/block-inclusivecache-sifive.git
+	shallow = true
 [submodule "generators/testchipip"]
 	path = generators/testchipip
 	url = https://github.com/ucb-bar/testchipip.git
+	shallow = true
 [submodule "generators/riscv-boom"]
 	path = generators/riscv-boom
 	url = https://github.com/riscv-boom/riscv-boom.git
+	shallow = true
 [submodule "generators/gemmini"]
 	path = generators/gemmini
 	url = https://github.com/ucb-bar/gemmini
+	shallow = true
 [submodule "opensbi"]
 	path = opensbi
 	url = https://github.com/riscv/opensbi.git
+	shallow = true
